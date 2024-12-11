@@ -47,12 +47,6 @@ text_faiss: Optional[object] = None
 image_faiss: Optional[object] = None
 
 def initialize_models() -> bool:
-    """
-    Initialize CLIP and LLM models with proper error handling and GPU optimization.
-    
-    Returns:
-        bool: True if initialization successful, raises RuntimeError otherwise
-    """
     global clip_model, clip_preprocess, clip_tokenizer, llm_tokenizer, llm_model, device
     
     try:
@@ -80,10 +74,14 @@ def initialize_models() -> bool:
                 bnb_4bit_quant_type="nf4"
             )
 
+            # Get token from Streamlit secrets
+            hf_token = st.secrets["HUGGINGFACE_TOKEN"]
+
             llm_tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
                 padding_side="left",
-                truncation_side="left"
+                truncation_side="left",
+                token=hf_token  # Add token here
             )
             llm_tokenizer.pad_token = llm_tokenizer.eos_token
 
@@ -91,7 +89,8 @@ def initialize_models() -> bool:
                 model_name,
                 quantization_config=quantization_config,
                 device_map="auto",
-                torch_dtype=torch.float16
+                torch_dtype=torch.float16,
+                token=hf_token  # Add token here
             )
             llm_model.eval()
             print("LLM initialized successfully")

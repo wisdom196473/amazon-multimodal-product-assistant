@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Amazon E-commerce Visual Assistant
 
 A multimodal AI assistant that helps users search and explore Amazon products through natural language and image-based interactions.
@@ -42,7 +41,8 @@ streamlit run amazon_app.py
 - `model.py`: Core AI model implementations
 - `requirements.txt`: Project dependencies
 
-## License
+## Future Directions
 
-MIT License
-=======
+- [ ] Fine-Tune FashionClip embedding model based on the specific domain data
+- [ ] Fine-Tune large language model to improve its generalization capabilities
+- [ ] Develop feedback loops for continuous improvement
