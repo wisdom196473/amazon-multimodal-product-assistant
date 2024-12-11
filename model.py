@@ -107,8 +107,7 @@ def initialize_models() -> bool:
     global clip_model, clip_preprocess, clip_tokenizer, llm_tokenizer, llm_model, device
     
     try:
-        # Force CPU device
-        device = "cpu"
+        device = "cpu"  # Force CPU usage for Streamlit Cloud
         print(f"Initializing models on device: {device}")
         
         # Initialize CLIP model with error handling
@@ -127,12 +126,6 @@ def initialize_models() -> bool:
         try:
             model_name = "mistralai/Mistral-7B-v0.1"
             
-            # CPU-compatible configuration
-            quantization_config = BitsAndBytesConfig(
-                load_in_8bit=True,  # Use 8-bit instead of 4-bit
-                llm_int8_enable_fp32_cpu_offload=True  # Enable CPU offloading
-            )
-
             # Get token from Streamlit secrets
             hf_token = st.secrets["HUGGINGFACE_TOKEN"]
 
@@ -146,9 +139,8 @@ def initialize_models() -> bool:
 
             llm_model = AutoModelForCausalLM.from_pretrained(
                 model_name,
-                quantization_config=quantization_config,
                 device_map="auto",
-                low_cpu_mem_usage=True,  # Enable low memory usage
+                low_cpu_mem_usage=True,
                 token=hf_token
             )
             llm_model.eval()
