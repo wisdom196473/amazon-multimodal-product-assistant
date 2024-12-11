@@ -51,3 +51,4 @@ Thumbs.db
 
 # Jupyter Notebook
 .ipynb_checkpoints
+.streamlit/secrets.toml
