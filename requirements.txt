@@ -12,3 +12,4 @@ langchain
 requests
 matplotlib
 accelerate>=0.26.0
+optimum
