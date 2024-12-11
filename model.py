@@ -76,7 +76,7 @@ def initialize_models() -> bool:
             )
 
             # Get token from Streamlit secrets
-            hf_token = st.secrets.get("HUGGINGFACE_TOKEN")
+            hf_token = st.secrets["HUGGINGFACE_TOKEN"]
             if not hf_token:
                 raise ValueError("HUGGINGFACE_TOKEN not found in Streamlit secrets")
 
@@ -84,8 +84,7 @@ def initialize_models() -> bool:
             llm_tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
                 token=hf_token,
-                trust_remote_code=True,
-                use_fast=False
+                trust_remote_code=True
             )
             llm_tokenizer.pad_token = llm_tokenizer.eos_token
             
