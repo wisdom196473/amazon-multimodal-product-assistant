@@ -53,6 +53,13 @@ def initialize_models() -> bool:
     try:
         print(f"Initializing models on device: {device}")
         
+        # Add explicit Hugging Face login
+        from huggingface_hub import login
+        hf_token = st.secrets["HUGGINGFACE_TOKEN"]
+        if not hf_token:
+            raise ValueError("HUGGINGFACE_TOKEN not found in Streamlit secrets")
+        login(token=hf_token)
+        
         # Initialize CLIP model with error handling
         try:
             clip_model, _, clip_preprocess = open_clip.create_model_and_transforms(
@@ -75,16 +82,12 @@ def initialize_models() -> bool:
                 bnb_4bit_quant_type="nf4"
             )
 
-            # Get token from Streamlit secrets
-            hf_token = st.secrets["HUGGINGFACE_TOKEN"]
-            if not hf_token:
-                raise ValueError("HUGGINGFACE_TOKEN not found in Streamlit secrets")
-
             # Initialize tokenizer with specific version requirements
             llm_tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
                 token=hf_token,
-                trust_remote_code=True
+                trust_remote_code=True,
+                use_auth_token=True  # Add this line
             )
             llm_tokenizer.pad_token = llm_tokenizer.eos_token
             
@@ -94,7 +97,8 @@ def initialize_models() -> bool:
                 quantization_config=quantization_config,
                 device_map="auto",
                 torch_dtype=torch.float16,
-                trust_remote_code=True
+                trust_remote_code=True,
+                use_auth_token=True  # Add this line
             )
             llm_model.eval()
             print("LLM initialized successfully")
