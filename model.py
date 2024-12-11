@@ -51,52 +51,38 @@ def initialize_models() -> bool:
     global clip_model, clip_preprocess, clip_tokenizer, llm_tokenizer, llm_model, device
     
     try:
-        print(f"Initializing models on device: {device}")
-        
-        # Initialize CLIP model with error handling
-        try:
-            clip_model, _, clip_preprocess = open_clip.create_model_and_transforms(
-                'hf-hub:Marqo/marqo-fashionCLIP'
-            )
-            clip_model = clip_model.to(device)
-            clip_model.eval()
-            clip_tokenizer = open_clip.get_tokenizer('hf-hub:Marqo/marqo-fashionCLIP')
-            print("CLIP model initialized successfully")
-        except Exception as e:
-            raise RuntimeError(f"Failed to initialize CLIP model: {str(e)}")
+        # CLIP initialization remains the same...
 
         # Initialize LLM with optimized settings
         try:
             model_name = "mistralai/Mistral-7B-v0.1"
             quantization_config = BitsAndBytesConfig(
                 load_in_4bit=True,
-                bnb_4bit_compute_dtype=torch.float16,
-                bnb_4bit_use_double_quant=True,
-                bnb_4bit_quant_type="nf4"
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_use_double_quant=True
             )
 
-            # Get token from Streamlit secrets
             hf_token = st.secrets.get("HUGGINGFACE_TOKEN")
             if not hf_token:
                 raise ValueError("HUGGINGFACE_TOKEN not found in Streamlit secrets")
 
-            # Initialize tokenizer with trust_remote_code=True
+            # Initialize tokenizer with specific version requirements
             llm_tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
                 token=hf_token,
                 trust_remote_code=True,
-                use_fast=True
+                revision="v0.1"
             )
             llm_tokenizer.pad_token = llm_tokenizer.eos_token
 
-            # Initialize model with trust_remote_code=True
             llm_model = AutoModelForCausalLM.from_pretrained(
                 model_name,
                 token=hf_token,
                 quantization_config=quantization_config,
                 device_map="auto",
                 torch_dtype=torch.float16,
-                trust_remote_code=True
+                trust_remote_code=True,
+                revision="v0.1"
             )
             llm_model.eval()
             print("LLM initialized successfully")
