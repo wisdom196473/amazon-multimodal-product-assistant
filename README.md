@@ -1,3 +1,14 @@
+---
+title: Amazon E-commerce Visual Assistant
+emoji: 🛍️
+colorFrom: blue
+colorTo: green
+sdk: streamlit
+sdk_version: "1.28.0"
+app_file: amazon_app.py
+pinned: false
+---
+
 # Amazon E-commerce Visual Assistant
 
 A multimodal AI assistant that helps users search and explore Amazon products through natural language and image-based interactions.
