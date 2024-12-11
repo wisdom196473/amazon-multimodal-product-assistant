@@ -2,7 +2,6 @@ name: Sync to Hugging Face hub
 on:
   push:
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   sync-to-hub:
@@ -16,4 +15,3 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: git push https://chen196473:$HF_TOKEN@huggingface.co/spaces/chen196473/amazon-multimodal-product-assistant main
-
