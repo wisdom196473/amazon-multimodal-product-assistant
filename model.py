@@ -53,12 +53,18 @@ def initialize_models() -> bool:
     try:
         print(f"Initializing models on device: {device}")
         
-        # Add explicit Hugging Face login
-        from huggingface_hub import login
-        hf_token = st.secrets["HUGGINGFACE_TOKEN"]
-        if not hf_token:
-            raise ValueError("HUGGINGFACE_TOKEN not found in Streamlit secrets")
-        login(token=hf_token)
+        # Add explicit Hugging Face login with better error handling
+        try:
+            hf_token = st.secrets.HUGGINGFACE_TOKEN
+            if not isinstance(hf_token, str) or not hf_token.startswith('hf_'):
+                raise ValueError("Invalid Hugging Face token format")
+            
+            # Validate token before proceeding
+            login(token=hf_token, write_permission=False)
+            print("Successfully authenticated with Hugging Face")
+            
+        except Exception as e:
+            raise RuntimeError(f"Hugging Face authentication failed: {str(e)}")
         
         # Initialize CLIP model with error handling
         try:
@@ -85,20 +91,18 @@ def initialize_models() -> bool:
             # Initialize tokenizer with specific version requirements
             llm_tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
-                token=hf_token,
-                trust_remote_code=True,
-                use_auth_token=True  # Add this line
+                use_auth_token=hf_token,
+                trust_remote_code=True
             )
             llm_tokenizer.pad_token = llm_tokenizer.eos_token
             
             llm_model = AutoModelForCausalLM.from_pretrained(
                 model_name,
-                token=hf_token,
+                use_auth_token=hf_token,
                 quantization_config=quantization_config,
                 device_map="auto",
                 torch_dtype=torch.float16,
-                trust_remote_code=True,
-                use_auth_token=True  # Add this line
+                trust_remote_code=True
             )
             llm_model.eval()
             print("LLM initialized successfully")
@@ -109,6 +113,7 @@ def initialize_models() -> bool:
 
     except Exception as e:
         raise RuntimeError(f"Model initialization failed: {str(e)}")
+
 
 # Data loading
 def load_data() -> bool:
