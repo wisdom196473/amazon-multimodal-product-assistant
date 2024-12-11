@@ -58,6 +58,8 @@ def initialize_models() -> bool:
             clip_model, _, clip_preprocess = open_clip.create_model_and_transforms(
                 'hf-hub:Marqo/marqo-fashionCLIP'
             )
+            # Use to_empty() first, then move to device
+            clip_model = clip_model.to_empty(device=device)
             clip_model = clip_model.to(device)
             clip_model.eval()
             clip_tokenizer = open_clip.get_tokenizer('hf-hub:Marqo/marqo-fashionCLIP')
