@@ -84,7 +84,8 @@ def initialize_models() -> bool:
             llm_tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
                 token=hf_token,
-                trust_remote_code=True
+                trust_remote_code=True,
+                use_fast=False
             )
             llm_tokenizer.pad_token = llm_tokenizer.eos_token
             
