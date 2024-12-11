@@ -57,6 +57,9 @@ streamlit run amazon_app.py
 - **RAG Framework**: Context-enhanced response generation[1]
 
 ### Performance Metrics
+
+#### FahisonClip Embedding Model
+
 - Recall@1: 0.6385
 - Recall@10: 0.9008
 - Precision@1: 0.6385
