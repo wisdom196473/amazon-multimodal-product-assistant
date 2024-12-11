@@ -53,19 +53,6 @@ def initialize_models() -> bool:
     try:
         print(f"Initializing models on device: {device}")
         
-        # Add explicit Hugging Face login with better error handling
-        try:
-            hf_token = st.secrets.HUGGINGFACE_TOKEN
-            if not isinstance(hf_token, str) or not hf_token.startswith('hf_'):
-                raise ValueError("Invalid Hugging Face token format")
-            
-            # Validate token before proceeding
-            login(token=hf_token, write_permission=False)
-            print("Successfully authenticated with Hugging Face")
-            
-        except Exception as e:
-            raise RuntimeError(f"Hugging Face authentication failed: {str(e)}")
-        
         # Initialize CLIP model with error handling
         try:
             clip_model, _, clip_preprocess = open_clip.create_model_and_transforms(
@@ -88,22 +75,23 @@ def initialize_models() -> bool:
                 bnb_4bit_quant_type="nf4"
             )
 
-            # Initialize tokenizer with specific version requirements
+            # Get token from Streamlit secrets
+            hf_token = st.secrets["HUGGINGFACE_TOKEN"]
+
             llm_tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
-                use_auth_token=hf_token,  # Changed from token to use_auth_token
-                trust_remote_code=True
+                padding_side="left",
+                truncation_side="left",
+                token=hf_token  # Add token here
             )
             llm_tokenizer.pad_token = llm_tokenizer.eos_token
-            
+
             llm_model = AutoModelForCausalLM.from_pretrained(
                 model_name,
-                use_auth_token=hf_token,  # Changed from token to use_auth_token
                 quantization_config=quantization_config,
-                device_map='cpu',  # Force CPU usage
+                device_map="auto",
                 torch_dtype=torch.float16,
-                low_cpu_mem_usage=True,
-                trust_remote_code=True
+                token=hf_token  # Add token here
             )
             llm_model.eval()
             print("LLM initialized successfully")
