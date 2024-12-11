@@ -15,4 +15,4 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push https://wisdom196473:$HF_TOKEN@huggingface.co/spaces/chen196473/amazon-multimodal-product-assistant main
+        run: git push https://wisdom196473:$HF_TOKEN@huggingface.co/spaces/wisdom196473/amazon-multimodal-product-assistant main
