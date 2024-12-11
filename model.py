@@ -88,20 +88,21 @@ def initialize_models() -> bool:
                 bnb_4bit_quant_type="nf4"
             )
 
-            # Initialize tokenizer with specific version requirements
+            # Initialize tokenizer with updated parameters based on documentation
             llm_tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
-                use_auth_token=hf_token,
+                use_fast=True,  # Add this line
+                padding_side="left",  # Add this line
                 trust_remote_code=True
             )
             llm_tokenizer.pad_token = llm_tokenizer.eos_token
             
+            # Initialize model with updated parameters
             llm_model = AutoModelForCausalLM.from_pretrained(
                 model_name,
-                use_auth_token=hf_token,
-                quantization_config=quantization_config,
                 device_map="auto",
                 torch_dtype=torch.float16,
+                quantization_config=quantization_config,
                 trust_remote_code=True
             )
             llm_model.eval()
@@ -113,7 +114,6 @@ def initialize_models() -> bool:
 
     except Exception as e:
         raise RuntimeError(f"Model initialization failed: {str(e)}")
-
 
 # Data loading
 def load_data() -> bool:
