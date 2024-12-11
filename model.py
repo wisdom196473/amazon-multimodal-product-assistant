@@ -1,4 +1,5 @@
 # Standard libraries
+import streamlit as st
 import os
 import io
 import json
@@ -75,22 +76,24 @@ def initialize_models() -> bool:
             )
 
             # Get token from Streamlit secrets
-            hf_token = st.secrets["HUGGINGFACE_TOKEN"]
+            hf_token = st.secrets.get("HUGGINGFACE_TOKEN")
+            if not hf_token:
+                raise ValueError("HUGGINGFACE_TOKEN not found in Streamlit secrets")
 
             llm_tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
+                token=hf_token,
                 padding_side="left",
-                truncation_side="left",
-                token=hf_token  # Add token here
+                truncation_side="left"
             )
             llm_tokenizer.pad_token = llm_tokenizer.eos_token
 
             llm_model = AutoModelForCausalLM.from_pretrained(
                 model_name,
+                token=hf_token,
                 quantization_config=quantization_config,
                 device_map="auto",
-                torch_dtype=torch.float16,
-                token=hf_token  # Add token here
+                torch_dtype=torch.float16
             )
             llm_model.eval()
             print("LLM initialized successfully")
