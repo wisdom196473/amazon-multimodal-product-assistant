@@ -1,6 +1,6 @@
 streamlit==1.28.2
 streamlit-chat==0.1.1
-torch==2.0.1
+torch==2.2.1
 transformers==4.34.1
 tokenizers==0.13.3
 open_clip_torch==2.23.0
