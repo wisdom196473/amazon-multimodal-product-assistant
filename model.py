@@ -47,10 +47,68 @@ embeddings_df: Optional[pd.DataFrame] = None
 text_faiss: Optional[object] = None
 image_faiss: Optional[object] = None
 
+# def initialize_models() -> bool:
+#     global clip_model, clip_preprocess, clip_tokenizer, llm_tokenizer, llm_model, device
+    
+#     try:
+#         print(f"Initializing models on device: {device}")
+        
+#         # Initialize CLIP model with error handling
+#         try:
+#             clip_model, _, clip_preprocess = open_clip.create_model_and_transforms(
+#                 'hf-hub:Marqo/marqo-fashionCLIP'
+#             )
+#             clip_model = clip_model.to(device)
+#             clip_model.eval()
+#             clip_tokenizer = open_clip.get_tokenizer('hf-hub:Marqo/marqo-fashionCLIP')
+#             print("CLIP model initialized successfully")
+#         except Exception as e:
+#             raise RuntimeError(f"Failed to initialize CLIP model: {str(e)}")
+
+#         # Initialize LLM with optimized settings
+#         try:
+#             model_name = "mistralai/Mistral-7B-v0.1"
+#             quantization_config = BitsAndBytesConfig(
+#                 load_in_4bit=True,
+#                 bnb_4bit_compute_dtype=torch.float16,
+#                 bnb_4bit_use_double_quant=True,
+#                 bnb_4bit_quant_type="nf4"
+#             )
+
+#             # Get token from Streamlit secrets
+#             hf_token = st.secrets["HUGGINGFACE_TOKEN"]
+
+#             llm_tokenizer = AutoTokenizer.from_pretrained(
+#                 model_name,
+#                 padding_side="left",
+#                 truncation_side="left",
+#                 token=hf_token  # Add token here
+#             )
+#             llm_tokenizer.pad_token = llm_tokenizer.eos_token
+
+#             llm_model = AutoModelForCausalLM.from_pretrained(
+#                 model_name,
+#                 quantization_config=quantization_config,
+#                 device_map="auto",
+#                 torch_dtype=torch.float16,
+#                 token=hf_token  # Add token here
+#             )
+#             llm_model.eval()
+#             print("LLM initialized successfully")
+#         except Exception as e:
+#             raise RuntimeError(f"Failed to initialize LLM: {str(e)}")
+
+#         return True
+
+#     except Exception as e:
+#         raise RuntimeError(f"Model initialization failed: {str(e)}")
+
 def initialize_models() -> bool:
     global clip_model, clip_preprocess, clip_tokenizer, llm_tokenizer, llm_model, device
     
     try:
+        # Force CPU device
+        device = "cpu"
         print(f"Initializing models on device: {device}")
         
         # Initialize CLIP model with error handling
@@ -65,14 +123,14 @@ def initialize_models() -> bool:
         except Exception as e:
             raise RuntimeError(f"Failed to initialize CLIP model: {str(e)}")
 
-        # Initialize LLM with optimized settings
+        # Initialize LLM with CPU-compatible settings
         try:
             model_name = "mistralai/Mistral-7B-v0.1"
+            
+            # CPU-compatible configuration
             quantization_config = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_compute_dtype=torch.float16,
-                bnb_4bit_use_double_quant=True,
-                bnb_4bit_quant_type="nf4"
+                load_in_8bit=True,  # Use 8-bit instead of 4-bit
+                llm_int8_enable_fp32_cpu_offload=True  # Enable CPU offloading
             )
 
             # Get token from Streamlit secrets
@@ -82,7 +140,7 @@ def initialize_models() -> bool:
                 model_name,
                 padding_side="left",
                 truncation_side="left",
-                token=hf_token  # Add token here
+                token=hf_token
             )
             llm_tokenizer.pad_token = llm_tokenizer.eos_token
 
@@ -90,8 +148,8 @@ def initialize_models() -> bool:
                 model_name,
                 quantization_config=quantization_config,
                 device_map="auto",
-                torch_dtype=torch.float16,
-                token=hf_token  # Add token here
+                low_cpu_mem_usage=True,  # Enable low memory usage
+                token=hf_token
             )
             llm_model.eval()
             print("LLM initialized successfully")
