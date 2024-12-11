@@ -80,20 +80,23 @@ def initialize_models() -> bool:
             if not hf_token:
                 raise ValueError("HUGGINGFACE_TOKEN not found in Streamlit secrets")
 
+            # Initialize tokenizer with trust_remote_code=True
             llm_tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
                 token=hf_token,
-                padding_side="left",
-                truncation_side="left"
+                trust_remote_code=True,
+                use_fast=True
             )
             llm_tokenizer.pad_token = llm_tokenizer.eos_token
 
+            # Initialize model with trust_remote_code=True
             llm_model = AutoModelForCausalLM.from_pretrained(
                 model_name,
                 token=hf_token,
                 quantization_config=quantization_config,
                 device_map="auto",
-                torch_dtype=torch.float16
+                torch_dtype=torch.float16,
+                trust_remote_code=True
             )
             llm_model.eval()
             print("LLM initialized successfully")
@@ -636,7 +639,6 @@ def hybrid_retrieval(query, top_k=5):
 
     return results, query_type
 
-
 def fallback_text_search(query, top_k=10):
     relevant_products = filter_by_metadata(query, metadata)
     if not relevant_products:
@@ -756,7 +758,6 @@ def chatbot(query, image_input=None):
         except Exception as e:
             print(f"Error processing query: {str(e)}")
             return f"Error processing request: {str(e)}"
-
 
 def cleanup_resources():
     if torch.cuda.is_available():
