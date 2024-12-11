@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Amazon E-commerce Visual Assistant
 
 A multimodal AI assistant that helps users search and explore Amazon products through natural language and image-based interactions.
@@ -44,3 +45,4 @@ streamlit run amazon_app.py
 ## License
 
 MIT License
+=======
