@@ -10,6 +10,5 @@ faiss-cpu
 huggingface_hub
 langchain
 requests
-bitsandbytes
 matplotlib
 accelerate>=0.26.0
