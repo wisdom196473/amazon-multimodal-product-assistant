@@ -1,0 +1,9 @@
+[server]
+enableCORS = false
+enableXsrfProtection = false
+
+[theme]
+primaryColor = "#1e3d59"
+backgroundColor = "#f5f7fa"
+secondaryBackgroundColor = "#e8edf2"
+textColor = "#1e3d59"
