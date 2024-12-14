@@ -104,6 +104,45 @@ def initialize_models() -> bool:
 
     except Exception as e:
         raise RuntimeError(f"Model initialization failed: {str(e)}")
+    
+def load_embeddings_from_huggingface(repo_id: str) -> Tuple[Dict, Dict]:
+    """
+    Load embeddings from Hugging Face repository with enhanced error handling.
+    
+    Args:
+        repo_id (str): Hugging Face repository ID
+        
+    Returns:
+        Tuple[Dict, Dict]: Dictionaries containing text and image embeddings
+    """
+    print("Loading embeddings from Hugging Face...")
+    try:
+        file_path = hf_hub_download(
+            repo_id=repo_id,
+            filename="embeddings.parquet",
+            repo_type="dataset"
+        )
+        df = pd.read_parquet(file_path)
+        
+        # Extract embedding columns
+        text_cols = [col for col in df.columns if col.startswith('text_embedding_')]
+        image_cols = [col for col in df.columns if col.startswith('image_embedding_')]
+        
+        # Create embedding dictionaries
+        text_embeddings_dict = {
+            row['Uniq_Id']: row[text_cols].values.astype(np.float32) 
+            for _, row in df.iterrows()
+        }
+        image_embeddings_dict = {
+            row['Uniq_Id']: row[image_cols].values.astype(np.float32) 
+            for _, row in df.iterrows()
+        }
+        
+        print(f"Successfully loaded {len(text_embeddings_dict)} embeddings")
+        return text_embeddings_dict, image_embeddings_dict
+    
+    except Exception as e:
+        raise RuntimeError(f"Failed to load embeddings from Hugging Face: {str(e)}")
 
 # Data loading
 def load_data() -> bool:
@@ -261,45 +300,6 @@ def load_data() -> bool:
         text_faiss = None
         image_faiss = None
         raise RuntimeError(f"Data loading failed: {str(e)}")
-
-def load_embeddings_from_huggingface(repo_id: str) -> Tuple[Dict, Dict]:
-    """
-    Load embeddings from Hugging Face repository with enhanced error handling.
-    
-    Args:
-        repo_id (str): Hugging Face repository ID
-        
-    Returns:
-        Tuple[Dict, Dict]: Dictionaries containing text and image embeddings
-    """
-    print("Loading embeddings from Hugging Face...")
-    try:
-        file_path = hf_hub_download(
-            repo_id=repo_id,
-            filename="embeddings.parquet",
-            repo_type="dataset"
-        )
-        df = pd.read_parquet(file_path)
-        
-        # Extract embedding columns
-        text_cols = [col for col in df.columns if col.startswith('text_embedding_')]
-        image_cols = [col for col in df.columns if col.startswith('image_embedding_')]
-        
-        # Create embedding dictionaries
-        text_embeddings_dict = {
-            row['Uniq_Id']: row[text_cols].values.astype(np.float32) 
-            for _, row in df.iterrows()
-        }
-        image_embeddings_dict = {
-            row['Uniq_Id']: row[image_cols].values.astype(np.float32) 
-            for _, row in df.iterrows()
-        }
-        
-        print(f"Successfully loaded {len(text_embeddings_dict)} embeddings")
-        return text_embeddings_dict, image_embeddings_dict
-    
-    except Exception as e:
-        raise RuntimeError(f"Failed to load embeddings from Hugging Face: {str(e)}")
 
 # FAISS index creation
 class MultiModalFAISSIndex:
