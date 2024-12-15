@@ -1,7 +1,7 @@
 streamlit
 torch
 transformers
-open_clip
+open_clip_torch
 pandas
 numpy
 Pillow
