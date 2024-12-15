@@ -1,4 +1,4 @@
 libgl1-mesa-glx
-cuda-cudart-11-0
+cuda-cudart-12-3
 libnccl2=2.20.3-1+cuda12.3
-libnccl-dev=2.20.3-1+cuda12.3
+cuda-toolkit-12-3
