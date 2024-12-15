@@ -31,7 +31,7 @@ def initialize_assistant():
             load_data()
             st.session_state.models_loaded = True
         st.success("Assistant is ready!")
-
+        
 def display_chat_history():
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
@@ -39,12 +39,11 @@ def display_chat_history():
             if "image" in message:
                 st.image(message["image"], caption="Uploaded Image", width=200)
             if "display_images" in message:
-                # Since we only have one image, we don't need multiple columns
-                img_data = message["display_images"][0]  # Get the first (and only) image
+                img_data = message["display_images"][0]
                 st.image(
                     img_data['image'],
                     caption=f"{img_data['product_name']}\nPrice: ${img_data['price']:.2f}",
-                    width=350  # Adjusted width for single image display
+                    width=350 
                 )
 
 def handle_user_input(prompt, uploaded_image):
