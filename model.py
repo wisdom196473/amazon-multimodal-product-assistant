@@ -1,5 +1,4 @@
 # Standard libraries
-import streamlit as st
 import os
 import io
 import json
@@ -25,7 +24,7 @@ from transformers import (
     PreTrainedModel,
     PreTrainedTokenizer
 )
-from huggingface_hub import hf_hub_download, login
+from huggingface_hub import hf_hub_download
 from langchain.prompts import PromptTemplate
 
 # Vector database
@@ -48,6 +47,12 @@ text_faiss: Optional[object] = None
 image_faiss: Optional[object] = None
 
 def initialize_models() -> bool:
+    """
+    Initialize CLIP and LLM models with proper error handling and GPU optimization.
+    
+    Returns:
+        bool: True if initialization successful, raises RuntimeError otherwise
+    """
     global clip_model, clip_preprocess, clip_tokenizer, llm_tokenizer, llm_model, device
     
     try:
@@ -58,8 +63,6 @@ def initialize_models() -> bool:
             clip_model, _, clip_preprocess = open_clip.create_model_and_transforms(
                 'hf-hub:Marqo/marqo-fashionCLIP'
             )
-            # Use to_empty() first, then move to device
-            clip_model = clip_model.to_empty(device=device)
             clip_model = clip_model.to(device)
             clip_model.eval()
             clip_tokenizer = open_clip.get_tokenizer('hf-hub:Marqo/marqo-fashionCLIP')
@@ -77,14 +80,10 @@ def initialize_models() -> bool:
                 bnb_4bit_quant_type="nf4"
             )
 
-            # Get token from Streamlit secrets
-            hf_token = st.secrets["HUGGINGFACE_TOKEN"]
-
             llm_tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
                 padding_side="left",
-                truncation_side="left",
-                token=hf_token  # Add token here
+                truncation_side="left"
             )
             llm_tokenizer.pad_token = llm_tokenizer.eos_token
 
@@ -92,8 +91,7 @@ def initialize_models() -> bool:
                 model_name,
                 quantization_config=quantization_config,
                 device_map="auto",
-                torch_dtype=torch.float16,
-                token=hf_token  # Add token here
+                torch_dtype=torch.float16
             )
             llm_model.eval()
             print("LLM initialized successfully")
@@ -104,45 +102,6 @@ def initialize_models() -> bool:
 
     except Exception as e:
         raise RuntimeError(f"Model initialization failed: {str(e)}")
-    
-def load_embeddings_from_huggingface(repo_id: str) -> Tuple[Dict, Dict]:
-    """
-    Load embeddings from Hugging Face repository with enhanced error handling.
-    
-    Args:
-        repo_id (str): Hugging Face repository ID
-        
-    Returns:
-        Tuple[Dict, Dict]: Dictionaries containing text and image embeddings
-    """
-    print("Loading embeddings from Hugging Face...")
-    try:
-        file_path = hf_hub_download(
-            repo_id=repo_id,
-            filename="embeddings.parquet",
-            repo_type="dataset"
-        )
-        df = pd.read_parquet(file_path)
-        
-        # Extract embedding columns
-        text_cols = [col for col in df.columns if col.startswith('text_embedding_')]
-        image_cols = [col for col in df.columns if col.startswith('image_embedding_')]
-        
-        # Create embedding dictionaries
-        text_embeddings_dict = {
-            row['Uniq_Id']: row[text_cols].values.astype(np.float32) 
-            for _, row in df.iterrows()
-        }
-        image_embeddings_dict = {
-            row['Uniq_Id']: row[image_cols].values.astype(np.float32) 
-            for _, row in df.iterrows()
-        }
-        
-        print(f"Successfully loaded {len(text_embeddings_dict)} embeddings")
-        return text_embeddings_dict, image_embeddings_dict
-    
-    except Exception as e:
-        raise RuntimeError(f"Failed to load embeddings from Hugging Face: {str(e)}")
 
 # Data loading
 def load_data() -> bool:
@@ -300,6 +259,45 @@ def load_data() -> bool:
         text_faiss = None
         image_faiss = None
         raise RuntimeError(f"Data loading failed: {str(e)}")
+
+def load_embeddings_from_huggingface(repo_id: str) -> Tuple[Dict, Dict]:
+    """
+    Load embeddings from Hugging Face repository with enhanced error handling.
+    
+    Args:
+        repo_id (str): Hugging Face repository ID
+        
+    Returns:
+        Tuple[Dict, Dict]: Dictionaries containing text and image embeddings
+    """
+    print("Loading embeddings from Hugging Face...")
+    try:
+        file_path = hf_hub_download(
+            repo_id=repo_id,
+            filename="embeddings.parquet",
+            repo_type="dataset"
+        )
+        df = pd.read_parquet(file_path)
+        
+        # Extract embedding columns
+        text_cols = [col for col in df.columns if col.startswith('text_embedding_')]
+        image_cols = [col for col in df.columns if col.startswith('image_embedding_')]
+        
+        # Create embedding dictionaries
+        text_embeddings_dict = {
+            row['Uniq_Id']: row[text_cols].values.astype(np.float32) 
+            for _, row in df.iterrows()
+        }
+        image_embeddings_dict = {
+            row['Uniq_Id']: row[image_cols].values.astype(np.float32) 
+            for _, row in df.iterrows()
+        }
+        
+        print(f"Successfully loaded {len(text_embeddings_dict)} embeddings")
+        return text_embeddings_dict, image_embeddings_dict
+    
+    except Exception as e:
+        raise RuntimeError(f"Failed to load embeddings from Hugging Face: {str(e)}")
 
 # FAISS index creation
 class MultiModalFAISSIndex:
@@ -598,7 +596,7 @@ def classify_query(query):
         return 'image_search'
     else:
         return 'product_info'
-
+    
 def boost_category_relevance(query, product, similarity_score):
     query_terms = set(query.lower().split())
     category_terms = set(product['Category'].lower().split())
