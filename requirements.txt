@@ -12,3 +12,4 @@ requests
 faiss-cpu
 huggingface_hub
 langchain
+accelerate>=0.26.0
