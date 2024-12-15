@@ -54,7 +54,6 @@ def initialize_models() -> bool:
         
         # Initialize CLIP model with error handling and fallback
         try:
-            # First try loading with device mapping
             clip_model, _, clip_preprocess = open_clip.create_model_and_transforms(
                 'hf-hub:Marqo/marqo-fashionCLIP',
                 device=device
@@ -66,7 +65,6 @@ def initialize_models() -> bool:
             print(f"CLIP initialization error: {str(e)}")
             print("Attempting to load CLIP model with CPU fallback...")
             try:
-                # Fallback to CPU
                 device = "cpu"
                 clip_model, _, clip_preprocess = open_clip.create_model_and_transforms(
                     'hf-hub:Marqo/marqo-fashionCLIP',
@@ -80,7 +78,6 @@ def initialize_models() -> bool:
 
         # Initialize LLM with optimized settings
         try:
-            # Check for HF_TOKEN and authenticate
             hf_token = os.environ.get("HF_TOKEN")
             if not hf_token:
                 raise RuntimeError("HF_TOKEN environment variable is not set")
@@ -109,7 +106,7 @@ def initialize_models() -> bool:
                 device_map="auto",
                 torch_dtype=torch.float16,
                 token=hf_token,
-                low_cpu_mem_usage=False  # Disable low CPU memory usage to prevent meta tensor issues
+                low_cpu_mem_usage=True  # Set to True to allow device_map usage
             )
             llm_model.eval()
             print("LLM initialized successfully")
