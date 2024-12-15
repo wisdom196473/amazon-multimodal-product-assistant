@@ -1,1 +1,3 @@
 libgl1-mesa-glx
+libcudart11.0
+libnccl2
