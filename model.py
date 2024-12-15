@@ -52,17 +52,31 @@ def initialize_models() -> bool:
     try:
         print(f"Initializing models on device: {device}")
         
-        # Initialize CLIP model with error handling
+        # Initialize CLIP model with error handling and fallback
         try:
+            # First try loading with device mapping
             clip_model, _, clip_preprocess = open_clip.create_model_and_transforms(
-                'hf-hub:Marqo/marqo-fashionCLIP'
+                'hf-hub:Marqo/marqo-fashionCLIP',
+                device=device
             )
-            clip_model = clip_model.to(device)
             clip_model.eval()
             clip_tokenizer = open_clip.get_tokenizer('hf-hub:Marqo/marqo-fashionCLIP')
             print("CLIP model initialized successfully")
         except Exception as e:
-            raise RuntimeError(f"Failed to initialize CLIP model: {str(e)}")
+            print(f"CLIP initialization error: {str(e)}")
+            print("Attempting to load CLIP model with CPU fallback...")
+            try:
+                # Fallback to CPU
+                device = "cpu"
+                clip_model, _, clip_preprocess = open_clip.create_model_and_transforms(
+                    'hf-hub:Marqo/marqo-fashionCLIP',
+                    device=device
+                )
+                clip_model.eval()
+                clip_tokenizer = open_clip.get_tokenizer('hf-hub:Marqo/marqo-fashionCLIP')
+                print("CLIP model initialized successfully on CPU")
+            except Exception as cpu_e:
+                raise RuntimeError(f"Failed to initialize CLIP model on CPU: {str(cpu_e)}")
 
         # Initialize LLM with optimized settings
         try:
@@ -94,7 +108,8 @@ def initialize_models() -> bool:
                 quantization_config=quantization_config,
                 device_map="auto",
                 torch_dtype=torch.float16,
-                token=hf_token
+                token=hf_token,
+                low_cpu_mem_usage=False  # Disable low CPU memory usage to prevent meta tensor issues
             )
             llm_model.eval()
             print("LLM initialized successfully")
