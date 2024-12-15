@@ -24,7 +24,7 @@ from transformers import (
     PreTrainedModel,
     PreTrainedTokenizer
 )
-from huggingface_hub import hf_hub_download
+from huggingface_hub import hf_hub_download, login
 from langchain.prompts import PromptTemplate
 
 # Vector database
@@ -72,12 +72,15 @@ def initialize_models() -> bool:
 
         # Initialize LLM with optimized settings
         try:
+            if "HF_TOKEN" in os.environ:
+                login(token=os.environ["HF_TOKEN"])
             model_name = "mistralai/Mistral-7B-v0.1"
             quantization_config = BitsAndBytesConfig(
                 load_in_4bit=True,
                 bnb_4bit_compute_dtype=torch.float16,
                 bnb_4bit_use_double_quant=True,
-                bnb_4bit_quant_type="nf4"
+                bnb_4bit_quant_type="nf4",
+                token=os.environ.get("HF_TOKEN")
             )
 
             llm_tokenizer = AutoTokenizer.from_pretrained(
