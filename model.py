@@ -47,12 +47,6 @@ text_faiss: Optional[object] = None
 image_faiss: Optional[object] = None
 
 def initialize_models() -> bool:
-    """
-    Initialize CLIP and LLM models with proper error handling and GPU optimization.
-    
-    Returns:
-        bool: True if initialization successful, raises RuntimeError otherwise
-    """
     global clip_model, clip_preprocess, clip_tokenizer, llm_tokenizer, llm_model, device
     
     try:
@@ -72,21 +66,26 @@ def initialize_models() -> bool:
 
         # Initialize LLM with optimized settings
         try:
-            if "HF_TOKEN" in os.environ:
-                login(token=os.environ["HF_TOKEN"])
+            # Check for HF_TOKEN and authenticate
+            hf_token = os.environ.get("HF_TOKEN")
+            if not hf_token:
+                raise RuntimeError("HF_TOKEN environment variable is not set")
+            
+            login(token=hf_token)
+            
             model_name = "mistralai/Mistral-7B-v0.1"
             quantization_config = BitsAndBytesConfig(
                 load_in_4bit=True,
                 bnb_4bit_compute_dtype=torch.float16,
                 bnb_4bit_use_double_quant=True,
-                bnb_4bit_quant_type="nf4",
-                token=os.environ.get("HF_TOKEN")
+                bnb_4bit_quant_type="nf4"
             )
 
             llm_tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
                 padding_side="left",
-                truncation_side="left"
+                truncation_side="left",
+                token=hf_token
             )
             llm_tokenizer.pad_token = llm_tokenizer.eos_token
 
@@ -94,7 +93,8 @@ def initialize_models() -> bool:
                 model_name,
                 quantization_config=quantization_config,
                 device_map="auto",
-                torch_dtype=torch.float16
+                torch_dtype=torch.float16,
+                token=hf_token
             )
             llm_model.eval()
             print("LLM initialized successfully")
