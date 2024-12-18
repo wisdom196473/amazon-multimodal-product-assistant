@@ -188,10 +188,7 @@ with st.sidebar:
     
     st.markdown("### 👥 Development Team")
     team_members = {
-        "Yu-Chih (Wisdom) Chen",
-        "Feier Xu",
-        "Yanchen Dong",
-        "Kitae Kim"
+        "Yu-Chih (Wisdom) Chen"
     }
     
     for name in team_members:
