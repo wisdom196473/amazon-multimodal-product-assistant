@@ -11,11 +11,11 @@ pinned: false
 
 # Amazon E-commerce Visual Assistant
 
-A multimodal AI assistant leveraging the Amazon Product Dataset 2020 to provide comprehensive product search and recommendations through natural language and image-based interactions[1].
+A multimodal AI assistant leveraging the Amazon Product Dataset 2020 to provide comprehensive product search and recommendations through natural language and image-based interactions.
 
 ## Project Overview
 
-This conversational AI system combines advanced language and vision models to enhance e-commerce customer support, enabling accurate, context-aware responses to product-related queries[1].
+This conversational AI system combines advanced language and vision models to enhance e-commerce customer support, enabling accurate, context-aware responses to product-related queries.
 
 ## Project Structure
 
@@ -48,13 +48,13 @@ streamlit run amazon_app.py
 - Standardized text fields and normalized numeric attributes
 - Enhanced metadata indices for categories, price ranges, keywords, brands
 - Validated image quality and managed duplicates
-- Structured data storage in Parquet format[1]
+- Structured data storage in Parquet format
 
 ### Model Components
 - **Vision-Language Integration**: FashionCLIP for multimodal embedding generation
 - **Vector Search**: FAISS with hybrid retrieval combining embedding similarity and metadata filtering
 - **Language Model**: Mistral-7B with 4-bit quantization
-- **RAG Framework**: Context-enhanced response generation[1]
+- **RAG Framework**: Context-enhanced response generation
 
 ### Performance Metrics
 
@@ -63,7 +63,7 @@ streamlit run amazon_app.py
 - Recall@1: 0.6385
 - Recall@10: 0.9008
 - Precision@1: 0.6385
-- NDCG@10: 0.7725[1]
+- NDCG@10: 0.7725
 
 ## Implementation Details
 
@@ -72,14 +72,14 @@ streamlit run amazon_app.py
 - Product comparisons and recommendations
 - Visual product recognition
 - Detailed product information retrieval
-- Price analysis and comparison[1]
+- Price analysis and comparison
 
 ### Technologies Used
 - FashionCLIP for visual understanding
 - Mistral-7B Language Model (4-bit quantized)
 - FAISS for similarity search
 - Google Vertex AI for vector storage
-- Streamlit for user interface[1]
+- Streamlit for user interface
 
 ## Challenges & Solutions
 
@@ -87,13 +87,13 @@ streamlit run amazon_app.py
 - Image processing with varying quality
 - GPU memory optimization
 - Efficient embedding storage
-- Query response accuracy[1]
+- Query response accuracy
 
 ### Implemented Solutions
 - Robust image validation pipeline
 - 4-bit model quantization
 - Optimized batch processing
-- Enhanced metadata enrichment[1]
+- Enhanced metadata enrichment
 
 ## Future Directions
 
